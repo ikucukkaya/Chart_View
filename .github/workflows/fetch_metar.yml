@@ -1,0 +1,34 @@
+name: Fetch METAR and publish
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # her 10 dakikada bir (UTC)
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run fetch_metar script
+        run: |
+          mkdir -p data
+          python scripts/fetch_metar.py
+
+      - name: Commit & push if changed
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/metar-*.json data/metar_latest.json data/metar_index.json
+          git diff --cached --quiet || git commit -m "☁️ Yeni METAR veri dosyası"
+          git push

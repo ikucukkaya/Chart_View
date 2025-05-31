@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chart & METAR Viewer</title>
+  <style>
+    :root {
+      --font: 'Segoe UI', Roboto, sans-serif;
+      --bg: #fafafa;
+      --border: #ccc;
+      --accent: #007acc;
+    }
+    body {margin:0; font-family:var(--font); background:var(--bg); display:flex; flex-direction:column; min-height:100vh;}
+    header {background:white; border-bottom:1px solid var(--border); padding:1rem; text-align:center; font-size:1.4rem; font-weight:bold;}
+    nav {display:flex; justify-content:center; border-bottom:1px solid var(--border); background:#f0f0f0;}
+    .tab-button {padding:.7rem 1.5rem; border:none; background:none; font-size:1rem; cursor:pointer; transition:background .2s;}
+    .tab-button:hover, .tab-button.active {background:var(--accent); color:#fff;}
+    .tab-content {display:none; padding:1rem; max-width:1000px; margin:auto;}
+    .tab-content.active {display:block;}
+    select {padding:.4rem; margin:.3rem; min-width:160px; font-size:1rem;}
+    iframe {width:100%; height:80vh; border:1px solid var(--border); box-shadow:0 0 10px rgba(0,0,0,.1);}
+    pre {white-space:pre-wrap; word-wrap:break-word; background:#f9f9f9; padding:.5rem; border:1px solid #ddd; border-radius:4px;}
+    #chart-note, #metar-note {font-size:.8rem; color:#666; margin-top:2rem; padding:1rem; border-top:1px solid #ccc; text-align:center;}
+    .metar-grid {display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1rem; width:100%;}
+    
+    /* Dinamik grid destegi */
+    .metar-grid[style*="grid-template-columns: repeat(1,"] {
+      grid-template-columns: 1fr !important;
+    }
+    .metar-grid[style*="grid-template-columns: repeat(2,"] {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .metar-grid[style*="grid-template-columns: repeat(3,"] {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+    
+    @media(max-width:600px) {
+      .tab-button {font-size:.9rem; padding:.5rem 1rem;}
+      select {font-size:.9rem; min-width:120px;}
+      .metar-grid {grid-template-columns:1fr !important;}
+    }
+    @media(max-width:1200px) and (min-width:601px) {
+      .metar-grid[style*="grid-template-columns: repeat(4,"],
+      .metar-grid[style*="grid-template-columns: repeat(3,"] {
+        grid-template-columns:repeat(2, 1fr) !important;
+      }
+    }
+    
+    .icao-card {border:1px solid #ddd; border-radius:8px; padding:1rem; background:white; min-height:400px; max-width:100%;}
+    .icao-title {margin:0 0 1rem 0; color:#007acc; font-size:1.2rem; font-weight:bold; text-align:center;}
+    .metar-section, .taf-section {margin-bottom:1rem;}
+    .section-title {margin:0 0 0.5rem 0; font-size:1rem; font-weight:bold;}
+    .decoded-info {padding:0.5rem; font-size:0.85rem; margin-top:0.5rem; border-radius:4px; line-height:1.4;}
+    .metar-decoded {background:#f0f8ff; border-left:3px solid #007acc;}
+    .taf-decoded {background:#f0fff0; border-left:3px solid #28a745;}
+    .decoded-line {margin-bottom:0.3rem;}
+    .label-bold {font-weight:bold;}
+    .runway-bold {font-weight:bold; color:#d63384;}
+    
+    /* Kontrol paneli stilleri */
+    .metar-controls {
+      margin-bottom: 1rem; 
+      padding: 1rem; 
+      background: #f5f5f5; 
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .metar-controls label {
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    .metar-controls input[type="checkbox"] {
+      margin-right: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <header>Chart & METAR/TAF Viewer</header>
+  <nav>
+    <button class="tab-button" onclick="showTab('chart')">Chart</button>
+    <button class="tab-button" onclick="showTab('metar')">METAR-TAF</button>
+  </nav>
+
+  <!-- Chart sekmesi -->
+  <div id="chart" class="tab-content">
+    <div id="selectors"></div>
+    <div class="iframe-container">
+      <iframe id="viewer" title="PDF viewer" frameborder="0"></iframe>
+    </div>
+    <div id="chart-note">
+      Bu uygulama yalnızca görsel kolaylık sağlar.<br>
+      Resmî ve güncel bilgileri <a href="https://dhmi.gov.tr/Sayfalar/aipturkey.aspx" target="_blank" rel="noopener noreferrer">Türkiye AIP</a>'si üzerinden teyit ediniz.
+    </div>
+  </div>
+
+  <!-- METAR-TAF sekmesi -->
+  <div id="metar" class="tab-content">
+    <!-- Kontrol paneli -->
+    <div class="metar-controls" style="margin-bottom: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
+        <!-- Dil seçimi -->
+        <div>
+          <label for="language-select" style="font-weight: bold; margin-right: 0.5rem;">🌐 Dil / Language:</label>
+          <select id="language-select" style="padding: 0.4rem; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="tr">🇹🇷 Türkçe</option>
+            <option value="en">🇺🇸 English</option>
+          </select>
+        </div>
+        
+        <!-- Meydan seçimi -->
+        <div>
+          <label style="font-weight: bold; margin-right: 0.5rem;">✈️ Meydanlar / Airports:</label>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+              <input type="checkbox" id="airport-LTFM" value="LTFM" checked style="cursor: pointer;">
+              <span>LTFM</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+              <input type="checkbox" id="airport-LTFJ" value="LTFJ" checked style="cursor: pointer;">
+              <span>LTFJ</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+              <input type="checkbox" id="airport-LTBA" value="LTBA" checked style="cursor: pointer;">
+              <span>LTBA</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+              <input type="checkbox" id="airport-LTBU" value="LTBU" checked style="cursor: pointer;">
+              <span>LTBU</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Geçmiş veriler -->
+        <div>
+          <label for="history-select" style="font-weight: bold; margin-right: 0.5rem;">📅 Geçmiş / History:</label>
+          <select id="history-select" style="padding: 0.4rem; border-radius: 4px; border: 1px solid #ccc;"></select>
+        </div>
+      </div>
+    </div>
+    
+    <div id="metar-data">Yükleniyor...</div>
+    <div id="metar-note"></div>
+  </div>
+
+  <script>
+    // Aktif sekme yönetimi için localStorage kullan
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelector(`[onclick*="${id}"]`).classList.add('active');
+      
+      // Aktif sekmeyi localStorage'a kaydet
+      localStorage.setItem('activeTab', id);
+    }
+
+    // Sayfa yüklendiğinde aktif sekmeyi geri yükle
+    function restoreActiveTab() {
+      const savedTab = localStorage.getItem('activeTab') || 'chart'; // Varsayılan olarak 'chart'
+      showTab(savedTab);
+    }
+
+    // Geçmiş METAR dropdown doldurma
+    fetch('data/metar_index.json')
+      .then(r => r.json())
+      .then(list => {
+        const sel = document.getElementById('history-select');
+        list.forEach((item, i) => {
+          const opt = document.createElement('option');
+          opt.value = item.file;
+          // UTC zamanını doğru şekilde göster
+          const utcDate = new Date(item.ts);
+          opt.textContent = utcDate.toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+          if (i === 0) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener('change', () => loadMetar(sel.value));
+        
+        // İlk yükleme için kullanıcı tercihlerinin yüklenmesini bekle
+        setTimeout(() => {
+          loadMetar(sel.value);
+        }, 100);
+      });
+
+    function loadMetar(file) {
+      fetch('data/' + file)
+        .then(r => r.json())
+        .then(all => {
+          const selectedLanguage = document.getElementById('language-select').value;
+          const selectedAirports = getSelectedAirports();
+          
+          let html = '<div class="metar-grid" style="grid-template-columns: repeat(' + selectedAirports.length + ', 1fr);">';
+          let latestFetchTime = '';
+          
+          // Seçili ICAO'ları işle
+          selectedAirports.forEach(icao => {
+            if (all[icao]) {
+              const d = all[icao];
+              html += `<div class="icao-card">`;
+              html += `<h3 class="icao-title">${icao}</h3>`;
+              
+              // METAR bölümü
+              html += `<div class="metar-section">`;
+              html += `<h4 class="section-title">METAR</h4>`;
+              const metarData = d.metar || d.obs_time || "Veri bulunamadı";
+              html += `<pre style="margin-bottom:0.5rem; font-size:0.8rem;">${metarData}</pre>`;
+              
+              if (metarData && metarData !== "Veri bulunamadı" && !metarData.startsWith("Hata:")) {
+                html += `<div class="decoded-info metar-decoded">`;
+                // Dil seçimine göre decoder kullan
+                if (selectedLanguage === 'en') {
+                  html += `${decodeMetarEN(metarData)}`;
+                } else {
+                  html += `${decodeMetar(metarData)}`;
+                }
+                html += `</div>`;
+              }
+              html += `</div>`;
+              
+              // TAF bölümü (eğer varsa)
+              if (d.taf && d.taf !== "Veri bulunamadı" && d.taf !== "TAF mevcut değil" && !d.taf.startsWith("Hata:")) {
+                html += `<div class="taf-section">`;
+                html += `<h4 class="section-title">TAF</h4>`;
+                html += `<pre style="margin-bottom:0.5rem; font-size:0.8rem;">${d.taf}</pre>`;
+                html += `<div class="decoded-info taf-decoded">`;
+                // Dil seçimine göre decoder kullan
+                if (selectedLanguage === 'en') {
+                  html += `${decodeTafEN(d.taf)}`;
+                } else {
+                  html += `${decodeTaf(d.taf)}`;
+                }
+                html += `</div>`;
+                html += `</div>`;
+              }
+              
+              html += `</div>`;
+              latestFetchTime = d.fetched_at;
+            }
+          });
+          
+          html += '</div>';
+          document.getElementById('metar-data').innerHTML = html;
+          
+          const noteText = selectedLanguage === 'en' 
+            ? `<p style="margin:0.5rem 0;">This data is for testing purposes. For official and current information, please refer to <a href="https://rasat.mgm.gov.tr/result" target="_blank" rel="noopener">MGM RASAT</a> system and <a href="https://aviationweather.gov/" target="_blank" rel="noopener">AviationWeather</a>.</p>
+               <p style="margin:0.2rem 0;font-style:italic;">Last data fetch time: ${new Date(latestFetchTime).toISOString().slice(0, 19).replace('T', ' ')} UTC</p>`
+            : `<p style="margin:0.5rem 0;">Bu veriler test amaçlıdır. Resmi ve güncel bilgiler için <a href="https://rasat.mgm.gov.tr/result" target="_blank" rel="noopener">MGM RASAT</a> sistemine ve <a href="https://aviationweather.gov/" target="_blank" rel="noopener">AviationWeather</a>'a başvurunuz.</p>
+               <p style="margin:0.2rem 0;font-style:italic;">Son veri çekim zamanı: ${new Date(latestFetchTime).toISOString().slice(0, 19).replace('T', ' ')} UTC</p>`;
+          
+          document.getElementById('metar-note').innerHTML = noteText;
+        });
+    }
+    
+    // Seçili meydanları al
+    function getSelectedAirports() {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="airport-"]');
+      const selected = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selected.push(cb.value);
+        }
+      });
+      return selected.length > 0 ? selected : ['LTFM', 'LTFJ', 'LTBA', 'LTBU']; // Hiçbiri seçili değilse hepsini göster
+    }
+    
+    // Kullanıcı tercihlerini localStorage'a kaydet
+    function saveUserPreferences() {
+      const preferences = {
+        language: document.getElementById('language-select').value,
+        selectedAirports: getSelectedAirports()
+      };
+      localStorage.setItem('metarPreferences', JSON.stringify(preferences));
+    }
+    
+    // Kullanıcı tercihlerini localStorage'dan geri yükle
+    function loadUserPreferences() {
+      try {
+        const saved = localStorage.getItem('metarPreferences');
+        if (saved) {
+          const preferences = JSON.parse(saved);
+          
+          // Dil seçimini geri yükle
+          if (preferences.language) {
+            document.getElementById('language-select').value = preferences.language;
+          }
+          
+          // Meydan seçimlerini geri yükle
+          if (preferences.selectedAirports && Array.isArray(preferences.selectedAirports)) {
+            // Önce tüm checkbox'ları temizle
+            document.querySelectorAll('input[type="checkbox"][id^="airport-"]').forEach(cb => {
+              cb.checked = false;
+            });
+            
+            // Kaydedilen seçimleri işaretle
+            preferences.selectedAirports.forEach(icao => {
+              const checkbox = document.getElementById(`airport-${icao}`);
+              if (checkbox) {
+                checkbox.checked = true;
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.log('Kullanıcı tercihleri yüklenirken hata:', error);
+        // Hata durumunda varsayılan değerler kullanılacak
+      }
+    }
+    
+    // Kullanıcı tercihlerini yükle ve event listener'ları ekle
+    function initializeUserPreferences() {
+      // Sayfa yüklendiğinde tercihleri geri yükle
+      loadUserPreferences();
+      
+      const languageSelect = document.getElementById('language-select');
+      const airportCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="airport-"]');
+      
+      // Dil değişikliğinde yeniden yükle ve tercihi kaydet
+      languageSelect.addEventListener('change', function() {
+        saveUserPreferences();
+        const currentFile = document.getElementById('history-select').value;
+        loadMetar(currentFile);
+      });
+      
+      // Checkbox değişikliğinde yeniden yükle ve tercihi kaydet
+      airportCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          saveUserPreferences();
+          const currentFile = document.getElementById('history-select').value;
+          loadMetar(currentFile);
+        });
+      });
+    }
+    
+    // Ana DOMContentLoaded event listener
+    document.addEventListener('DOMContentLoaded', function() {
+      // Önce aktif sekmeyi geri yükle
+      restoreActiveTab();
+      
+      // Daha sonra kullanıcı tercihlerini başlat
+      initializeUserPreferences();
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
