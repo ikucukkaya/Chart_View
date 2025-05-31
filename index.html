@@ -243,9 +243,9 @@
           document.getElementById('metar-data').innerHTML = html;
           
           const noteText = selectedLanguage === 'en' 
-            ? `<p style="margin:0.5rem 0;">This data is for testing purposes. For official and current information, please refer to <a href="https://rasat.mgm.gov.tr/result" target="_blank" rel="noopener">MGM RASAT</a> system and <a href="https://aviationweather.gov/" target="_blank" rel="noopener">AviationWeather</a>.</p>
+            ? `<p style="margin:0.5rem 0;">This data is for testing purposes. For official and current information, please refer to <a href="https://rasat.mgm.gov.tr/result" target="_blank" rel="noopener">MGM RASAT</a> system.</p>
                <p style="margin:0.2rem 0;font-style:italic;">Last data fetch time: ${new Date(latestFetchTime).toISOString().slice(0, 19).replace('T', ' ')} UTC</p>`
-            : `<p style="margin:0.5rem 0;">Bu veriler test amaçlıdır. Resmi ve güncel bilgiler için <a href="https://rasat.mgm.gov.tr/result" target="_blank" rel="noopener">MGM RASAT</a> sistemine ve <a href="https://aviationweather.gov/" target="_blank" rel="noopener">AviationWeather</a>'a başvurunuz.</p>
+            : `<p style="margin:0.5rem 0;">Bu veriler test amaçlıdır. Resmi ve güncel bilgiler için <a href="https://rasat.mgm.gov.tr/result" target="_blank" rel="noopener">MGM RASAT</a> sistemine başvurunuz.</p>
                <p style="margin:0.2rem 0;font-style:italic;">Son veri çekim zamanı: ${new Date(latestFetchTime).toISOString().slice(0, 19).replace('T', ' ')} UTC</p>`;
           
           document.getElementById('metar-note').innerHTML = noteText;
