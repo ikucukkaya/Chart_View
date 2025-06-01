@@ -9,42 +9,102 @@ let selects = [];
 // PDF iframe yüklendiğinde çalışacak fonksiyon
 VIEWER.addEventListener('load', function() {
   adjustIframeSize();
+  
+  // PDF yüklendikten sonra ekrana sığdırmayı dene
+  setTimeout(fitPdfToScreen, 800);
 });
 
 // Ekran boyutu değiştiğinde PDF boyutunu ayarla
-window.addEventListener('resize', adjustIframeSize);
+window.addEventListener('resize', function() {
+  adjustIframeSize();
+  setTimeout(fitPdfToScreen, 300);
+});
+
+// PDF'i ekrana sığdırmak için ek fonksiyon
+function fitPdfToScreen() {
+  if (VIEWER.src && window.innerWidth <= 850) {
+    try {
+      // PDF viewer'ın içine mesaj gönder
+      VIEWER.contentWindow.postMessage({ type: 'fit-to-width' }, '*');
+      VIEWER.contentWindow.postMessage({ type: 'fit-to-page' }, '*');
+    } catch(e) {
+      // Cross-origin hataları için sessizce devam et
+    }
+  }
+}
 
 // PDF boyutunu ayarlayan fonksiyon
 function adjustIframeSize() {
   if (VIEWER.src) {
     // Mobil cihazlarda özel ayarlar
     if (window.innerWidth <= 850) {
-      // PDF boyutlarını tam ekran genişliğine ayarla
-      VIEWER.style.width = '100vw';
-      VIEWER.style.height = `${window.innerHeight - 180}px`;
-      VIEWER.style.minHeight = '500px';
-      
-      // PDF içeriğini iframe'e sığdırmak için URL parametrelerini güncelle
-      if (VIEWER.src && !VIEWER.src.includes('zoom=page-width')) {
-        const currentSrc = VIEWER.src;
-        const separator = currentSrc.includes('#') ? '&' : '#';
-        VIEWER.src = currentSrc.replace('#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit', 
-                                        '#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-width');
+      // Container'ı tam genişlik yap
+      const container = VIEWER.parentElement;
+      if (container) {
+        container.style.width = '100%';
+        container.style.maxWidth = '100%';
+        container.style.overflow = 'hidden';
+        container.style.padding = '0';
       }
       
-      // PDF'i tam boyuta ayarlayacak mesajı gönder
-      setTimeout(() => {
-        try {
-          VIEWER.contentWindow.postMessage({ type: 'fit-to-page' }, '*');
-          VIEWER.contentWindow.postMessage({ type: 'fit-to-width' }, '*');
-        } catch(e) {
-          // Cross-origin hatalarını görmezden gel
-        }
-      }, 100);
+      // PDF iframe'ini mobil için optimize et
+      VIEWER.style.width = '100%';
+      VIEWER.style.maxWidth = '100%';
+      VIEWER.style.height = `${window.innerHeight - 180}px`;
+      VIEWER.style.minHeight = '500px';
+      VIEWER.style.border = 'none';
+      VIEWER.style.transform = 'scale(0.98)'; // Hafifçe küçült
+      VIEWER.style.transformOrigin = 'top center';
+      
+      // PDF içeriğini ekrana sığdır
+      updatePdfUrlForMobile();
+      
     } else {
       // Desktop için normal boyutlar
-      VIEWER.style.width = '800px';
-      VIEWER.style.height = '1131px';
+      const container = VIEWER.parentElement;
+      if (container) {
+        container.style.width = '';
+        container.style.marginLeft = '';
+        container.style.marginRight = '';
+        container.style.overflow = '';
+      }
+      
+      VIEWER.style.width = '100%';
+      VIEWER.style.height = '80vh';
+      VIEWER.style.border = '1px solid var(--border)';
+    }
+  }
+}
+
+// Mobil için PDF URL'sini güncelle
+function updatePdfUrlForMobile() {
+  if (VIEWER.src && window.innerWidth <= 850) {
+    const currentSrc = VIEWER.src;
+    const baseSrc = currentSrc.split('#')[0];
+    
+    // Mobil için optimize edilmiş parametreler
+    const mobileParams = [
+      'view=FitV',  // PDF'i dikey olarak ekrana sığdır
+      'toolbar=0',
+      'navpanes=0',
+      'scrollbar=1',
+      'zoom=page-fit', // Tam ekrana sığdırmak için değiştirildi
+      'pagemode=none'
+    ].join('&');
+    
+    const newSrc = `${baseSrc}#${mobileParams}`;
+    
+    if (currentSrc !== newSrc) {
+      VIEWER.src = newSrc;
+      
+      // PDF yüklendikten sonra tam ekrana sığdırmasını sağla
+      setTimeout(() => {
+        try {
+          VIEWER.contentWindow.postMessage({ type: 'fit-to-width' }, '*');
+        } catch(e) {
+          // Cross-origin hatalarını yoksay
+        }
+      }, 1000);
     }
   }
 }
@@ -83,7 +143,14 @@ function handleChange(e){
 
   const maybePath = selections.filter(Boolean).join("/");
   if(paths.includes(maybePath)){
-    VIEWER.src = `Charts/${maybePath}#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit`;
+    // Ekran boyutuna göre farklı parametreler kullan
+    if (window.innerWidth <= 850) {
+      VIEWER.src = `Charts/${maybePath}#view=FitV&toolbar=0&navpanes=0&scrollbar=1&zoom=page-fit&pagemode=none`;
+      // Yüklendikten sonra ekrana sığdırmak için timer başlat
+      setTimeout(fitPdfToScreen, 800);
+    } else {
+      VIEWER.src = `Charts/${maybePath}#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit`;
+    }
     return;
   }
 
