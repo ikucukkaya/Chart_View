@@ -39,11 +39,103 @@
       .tab-button {font-size:.9rem; padding:.5rem 1rem;}
       select {font-size:.9rem; min-width:120px;}
       .metar-grid {grid-template-columns:1fr !important;}
+      
+      /* Mobil için kontrol paneli düzenlemesi - kaydırma çubuğu kaldırma */
+      .metar-controls {
+        padding: 0.3rem !important;
+        margin-bottom: 0.6rem !important;
+      }
+      
+      .metar-controls > div {
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+        align-items: stretch !important;
+        overflow: visible !important;
+      }
+      
+      .metar-controls > div > div {
+        flex-shrink: 1 !important;
+        width: 100% !important;
+      }
+      
+      .metar-controls label {
+        font-size: 0.7rem;
+        white-space: normal !important;
+        margin-right: 0 !important;
+        margin-bottom: 0.05rem;
+        display: block;
+        font-weight: 600;
+      }
+      
+      .metar-controls select {
+        min-width: auto !important;
+        width: 100% !important;
+        font-size: 0.7rem !important;
+        padding: 0.25rem !important;
+        margin: 0 !important;
+      }
+      
+      /* Meydan checkbox'ları için mobil düzenleme - tek satır */
+      .metar-controls div[style*="display: flex; gap: 0.5rem"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 0.15rem !important;
+        margin-top: 0.05rem;
+        justify-content: space-between !important;
+        width: 100% !important;
+      }
+      
+      .metar-controls div[style*="display: flex; gap: 0.5rem"] label {
+        font-size: 0.65rem !important;
+        margin-bottom: 0 !important;
+        margin-right: 0 !important;
+        display: flex !important;
+        font-weight: 500 !important;
+        flex: 1 !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+      }
+      
+      .metar-controls div[style*="display: flex; gap: 0.5rem"] span {
+        font-size: 0.65rem !important;
+      }
+      
+      .metar-controls input[type="checkbox"] {
+        transform: scale(0.7);
+        margin-right: 0.05rem !important;
+        margin-left: 0 !important;
+      }
+      
+      /* Padding'leri minimize et */
+      .tab-content {
+        padding: 0.8rem !important;
+      }
     }
     @media(max-width:1200px) and (min-width:601px) {
       .metar-grid[style*="grid-template-columns: repeat(4,"],
       .metar-grid[style*="grid-template-columns: repeat(3,"] {
         grid-template-columns:repeat(2, 1fr) !important;
+      }
+      
+      /* Tablet için kontrol paneli düzenlemesi */
+      .metar-controls > div {
+        gap: 1rem !important;
+      }
+      
+      .metar-controls select {
+        min-width: 140px !important;
+      }
+    }
+    
+    /* Küçük tablet için ek düzenleme */
+    @media(max-width:800px) and (min-width:601px) {
+      .metar-controls > div {
+        flex-wrap: wrap !important;
+        gap: 1rem !important;
+      }
+      
+      .metar-controls > div > div:last-child {
+        flex-basis: 100%;
       }
     }
     
@@ -97,44 +189,44 @@
   <!-- METAR-TAF sekmesi -->
   <div id="metar" class="tab-content">
     <!-- Kontrol paneli -->
-    <div class="metar-controls" style="margin-bottom: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
-      <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
+    <div class="metar-controls" style="margin-bottom: 1rem; padding: 0.8rem; background: #f5f5f5; border-radius: 8px;">
+      <div style="display: flex; flex-wrap: nowrap; gap: 1rem; align-items: center; overflow-x: auto;">
         <!-- Dil seçimi -->
-        <div>
-          <label for="language-select" style="font-weight: bold; margin-right: 0.5rem;"> Dil / Language:</label>
-          <select id="language-select" style="padding: 0.4rem; border-radius: 4px; border: 1px solid #ccc;">
+        <div style="flex-shrink: 0;">
+          <label for="language-select" style="font-weight: bold; margin-right: 0.3rem; white-space: nowrap;"> Dil / Language:</label>
+          <select id="language-select" style="padding: 0.3rem; border-radius: 4px; border: 1px solid #ccc; font-size: 0.9rem;">
             <option value="tr">Türkçe</option>
             <option value="en">English</option>
           </select>
         </div>
         
         <!-- Meydan seçimi -->
-        <div>
-          <label style="font-weight: bold; margin-right: 0.5rem;"> Meydanlar / Airports:</label>
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+        <div style="flex-shrink: 0;">
+          <label style="font-weight: bold; margin-right: 0.3rem; white-space: nowrap;"> Meydanlar / Airports:</label>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
+            <label style="display: flex; align-items: center; gap: 0.1rem; cursor: pointer; white-space: nowrap;">
               <input type="checkbox" id="airport-LTFM" value="LTFM" checked style="cursor: pointer;">
-              <span>LTFM</span>
+              <span style="font-size: 0.9rem;">LTFM</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+            <label style="display: flex; align-items: center; gap: 0.1rem; cursor: pointer; white-space: nowrap;">
               <input type="checkbox" id="airport-LTFJ" value="LTFJ" checked style="cursor: pointer;">
-              <span>LTFJ</span>
+              <span style="font-size: 0.9rem;">LTFJ</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+            <label style="display: flex; align-items: center; gap: 0.1rem; cursor: pointer; white-space: nowrap;">
               <input type="checkbox" id="airport-LTBA" value="LTBA" checked style="cursor: pointer;">
-              <span>LTBA</span>
+              <span style="font-size: 0.9rem;">LTBA</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+            <label style="display: flex; align-items: center; gap: 0.1rem; cursor: pointer; white-space: nowrap;">
               <input type="checkbox" id="airport-LTBU" value="LTBU" checked style="cursor: pointer;">
-              <span>LTBU</span>
+              <span style="font-size: 0.9rem;">LTBU</span>
             </label>
           </div>
         </div>
         
         <!-- Geçmiş veriler -->
-        <div>
-          <label for="history-select" style="font-weight: bold; margin-right: 0.5rem;"> Geçmiş / History:</label>
-          <select id="history-select" style="padding: 0.4rem; border-radius: 4px; border: 1px solid #ccc;"></select>
+        <div style="flex-shrink: 0;">
+          <label for="history-select" style="font-weight: bold; margin-right: 0.3rem; white-space: nowrap;"> Geçmiş / History:</label>
+          <select id="history-select" style="padding: 0.3rem; border-radius: 4px; border: 1px solid #ccc; min-width: 160px; font-size: 0.9rem;"></select>
         </div>
       </div>
     </div>
