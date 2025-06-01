@@ -20,7 +20,8 @@ def cleanup_duplicate_metars():
         try:
             payload = json.loads(pathlib.Path(f).read_text())
             first_icao = next(iter(payload))
-            obs_time = payload[first_icao]["obs_time"]
+            # Hem eski (obs_time) hem yeni (metar_obs_time) formatı için uyumluluk
+            obs_time = payload[first_icao].get("metar_obs_time") or payload[first_icao].get("obs_time", "")
             
             if obs_time not in obs_times:
                 obs_times[obs_time] = []
@@ -92,13 +93,15 @@ def rebuild_index():
         try:
             payload = json.loads(pathlib.Path(f).read_text())
             first_icao = next(iter(payload))
-            obs_raw = payload[first_icao]["obs_time"]
-            dt = datetime.datetime.strptime(obs_raw, "%Y-%m-%d %H:%M:%S")
-            iso_obs = dt.isoformat() + "Z"
-            index.append({
-                "file": pathlib.Path(f).name,
-                "ts": iso_obs
-            })
+            # Hem eski (obs_time) hem yeni (metar_obs_time) formatı için uyumluluk
+            obs_raw = payload[first_icao].get("metar_obs_time") or payload[first_icao].get("obs_time", "")
+            if obs_raw:
+                dt = datetime.datetime.strptime(obs_raw, "%Y-%m-%d %H:%M:%S")
+                iso_obs = dt.isoformat() + "Z"
+                index.append({
+                    "file": pathlib.Path(f).name,
+                    "ts": iso_obs
+                })
         except Exception as e:
             print(f"⚠ {f} index'e eklenemedi: {e}")
 
