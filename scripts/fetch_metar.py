@@ -26,19 +26,37 @@ def parse_metar_time(metar_string, current_utc):
         year = current_utc.year
         month = current_utc.month
         
-        # Eğer METAR günü gelecekte ise, önceki aydan olabilir
-        metar_date = datetime.datetime(year, month, day, hour, minute, tzinfo=datetime.timezone.utc)
-        if metar_date > current_utc + datetime.timedelta(days=1):
+        # Eğer bugün ayın başında ve METAR günü yüksekse (örn: 31), önceki aydan olabilir
+        if current_utc.day <= 2 and day > 28:
+            # Önceki aya git
             if month == 1:
                 month = 12
                 year -= 1
             else:
                 month -= 1
-            metar_date = datetime.datetime(year, month, day, hour, minute, tzinfo=datetime.timezone.utc)
         
-        return metar_date.strftime("%Y-%m-%d %H:%M:%S")
+        # Güvenli tarih oluşturma - geçersiz günleri kontrol et
+        try:
+            metar_date = datetime.datetime(year, month, day, hour, minute, tzinfo=datetime.timezone.utc)
+            return metar_date.strftime("%Y-%m-%d %H:%M:%S")
+            
+        except ValueError:
+            # Geçersiz gün durumunda önceki aya git
+            if month == 1:
+                month = 12
+                year -= 1
+            else:
+                month -= 1
+            
+            try:
+                # Ay değiştirdikten sonra tekrar dene
+                metar_date = datetime.datetime(year, month, day, hour, minute, tzinfo=datetime.timezone.utc)
+                return metar_date.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                # Hala geçersizse, mevcut zamanı kullan
+                return current_utc.strftime("%Y-%m-%d %H:%M:%S")
     
-    # Eğer parse edilemezse reportTime'ı kullan
+    # Eğer parse edilemezse boş döndür
     return ""
 
 # Zaman damgası
@@ -46,13 +64,10 @@ utc_now = datetime.datetime.now(datetime.timezone.utc)
 stamp   = utc_now.strftime("%Y%m%d-%H%M")
 iso_now = utc_now.isoformat().replace('+00:00', 'Z')
 
-print(f"🌍 METAR/TAF verileri çekiliyor... {stamp}")
-
 # 1) METAR ve TAF'ları çek
 all_data = {}
 for icao in ICAOS:
     try:
-        print(f"  📡 {icao} verisi alınıyor...")
         with urllib.request.urlopen(URL.format(icao), timeout=12) as r:
             res = json.load(r)
         
@@ -82,26 +97,21 @@ for icao in ICAOS:
                     taf_obs_time = parse_metar_time(taf_raw, utc_now)
                     if not taf_obs_time:
                         taf_obs_time = latest_item.get("reportTime", "")
-                else:
-                    taf_raw = "TAF mevcut değil"
                 
-                print(f"    ✓ METAR: {metar_obs_time}")
-                print(f"    ✓ TAF:   {'Var' if taf_raw != 'TAF mevcut değil' else 'Yok'}")
-            else:
-                print(f"    ✗ En güncel veri bulunamadı")
+                print(f"✓ {icao}: METAR={metar_obs_time}, TAF={'Var' if taf_raw != 'Veri bulunamadı' else 'Yok'}")
 
     except Exception as e:
         metar_raw, metar_obs_time = f"Hata: {e}", ""
         taf_raw, taf_obs_time = f"Hata: {e}", ""
-        print(f"    ✗ Hata: {e}")
+        print(f"✗ {icao}: Hata - {e}")
 
     all_data[icao] = {
-        "icao":           icao,
-        "metar":          metar_raw,
+        "icao":       icao,
+        "metar":      metar_raw,
         "metar_obs_time": metar_obs_time,
-        "taf":            taf_raw,
-        "taf_obs_time":   taf_obs_time,
-        "fetched_at":     iso_now
+        "taf":        taf_raw,
+        "taf_obs_time": taf_obs_time,
+        "fetched_at": iso_now
     }
 
 # 2) Mevcut latest veriyi kontrol et - duplicate engelleme
@@ -116,23 +126,26 @@ if latest_file.exists():
         latest_metar_obs_time = latest_data.get(first_icao, {}).get("metar_obs_time", "")
         current_metar_obs_time = all_data[first_icao]["metar_obs_time"]
         
-        if latest_metar_obs_time == current_metar_obs_time:
+        # TAF zamanını da kontrol et (eğer varsa)
+        latest_taf_obs_time = latest_data.get(first_icao, {}).get("taf_obs_time", "")
+        current_taf_obs_time = all_data[first_icao]["taf_obs_time"]
+
+        if latest_metar_obs_time == current_metar_obs_time and latest_taf_obs_time == current_taf_obs_time:
             should_create_new_file = False
-            print(f"ℹ  Aynı METAR gözlem zamanı: {current_metar_obs_time} - yeni dosya oluşturulmadı")
+            print(f"ℹ Aynı METAR ({current_metar_obs_time}) ve TAF ({current_taf_obs_time}) gözlem zamanı mevcut, yeni dosya oluşturulmadı.")
     except Exception as e:
-        print("⚠  Latest dosya kontrolünde hata:", e)
+        print("⚠ Latest dosya kontrolünde hata:", e)
 
 # 3) Yeni dosya oluştur (sadece farklı veri varsa)
 if should_create_new_file:
     outfile = DATA / f"metar-{stamp}.json"
     outfile.write_text(json.dumps(all_data, indent=2, ensure_ascii=False))
-    print("✓", outfile.name, "oluşturuldu")
+    print("✓", outfile.name, "yazıldı")
 else:
-    print("⏭  Duplicate veri, yeni dosya oluşturulmadı")
+    print("⏭ Duplicate veri, dosya oluşturulmadı")
 
 # 4) latest kopyası (her zaman güncelle)
 (DATA / "metar_latest.json").write_text(json.dumps(all_data, indent=2, ensure_ascii=False))
-print("✓ metar_latest.json güncellendi")
 
 # 5) index dosyasını güncelle (sadece yeni dosya oluşturulduysa)
 if should_create_new_file:
@@ -165,7 +178,7 @@ if should_create_new_file:
     index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False))
     print("✓ metar_index.json güncellendi")
 
-print("🎉 METAR/TAF işlemi tamamlandı!")
+print("✓ metar_latest.json güncellendi (METAR ve TAF içeriyor)")
 
 # 6) Duplicate'leri temizle (her 5 dosyada bir)
 files_count = len(glob.glob("data/metar-*.json"))
