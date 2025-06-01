@@ -842,24 +842,122 @@ function decodeChangeGroupEN(section, decoded) {
   decodeWeatherEN(section, decoded, 'Weather', '  • ');
 }
 
-// İngilizce hava durumu çözümlemesi
-function decodeWeatherEN(section, decoded, label, prefix = '') {
-  const weatherCodes = {
-    'TSRA': 'thunderstorm with rain', 'SHRA': 'showers', 'RA': 'rain', 
-    'SN': 'snow', 'FG': 'fog', 'BCFG': 'patches of fog', 'BR': 'mist',
-    'DZ': 'drizzle', 'SH': 'showers', 'TS': 'thunderstorm',
-    'FZ': 'freezing', 'BL': 'blowing', 'MI': 'shallow'
-  };
+// PDF URL'ini mobil için optimize et
+function createOptimizedPdfUrl(basePath) {
+  const isMobile = window.innerWidth <= 850;
+  const isSmallMobile = window.innerWidth <= 480;
   
-  let weatherFound = false;
-  for (const [code, desc] of Object.entries(weatherCodes)) {
-    if (section.includes(code)) {
-      const intensity = section.includes('-' + code) ? 'light ' : section.includes('+' + code) ? 'heavy ' : '';
-      if (!weatherFound) {
-        decoded.push(`<div class="decoded-line">${prefix}<span class="label-bold">${label}:</span> ${intensity}${desc}</div>`);
-        weatherFound = true;
-        break;
+  if (isSmallMobile) {
+    return `${basePath}#view=FitH&zoom=page-width&toolbar=0&navpanes=0&scrollbar=1`;
+  } else if (isMobile) {
+    return `${basePath}#view=Fit&zoom=page-fit&toolbar=0&navpanes=0&scrollbar=1`;
+  } else {
+    return `${basePath}#view=Fit&zoom=85&toolbar=1&navpanes=0`;
+  }
+}
+
+// PDF yükleme işlemi
+function loadPdfIntoIframe(pdfPath) {
+  const iframe = document.getElementById('viewer');
+  const loadingIndicator = document.getElementById('pdf-loading');
+  
+  if (!iframe || !pdfPath) return;
+  
+  // Loading göster
+  if (loadingIndicator) {
+    loadingIndicator.style.display = 'block';
+  }
+  
+  // Iframe'i temizle
+  iframe.src = '';
+  
+  // Kısa bir gecikme sonrası PDF'i yükle
+  setTimeout(() => {
+    const optimizedUrl = createOptimizedPdfUrl(pdfPath);
+    iframe.src = optimizedUrl;
+    
+    // PDF yüklenme kontrolü
+    iframe.onload = function() {
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
       }
+      
+      // Mobilde ekrana sığdırma işlemi
+      setTimeout(() => {
+        fitPdfToViewport();
+      }, 500);
+    };
+    
+    iframe.onerror = function() {
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      console.error('PDF yükleme hatası:', pdfPath);
+    };
+  }, 100);
+}
+
+// PDF'i viewport'a sığdır
+function fitPdfToViewport() {
+  const iframe = document.getElementById('viewer');
+  const container = iframe?.parentElement;
+  
+  if (!iframe || !container) return;
+  
+  const isMobile = window.innerWidth <= 850;
+  
+  if (isMobile) {
+    // Mobilde PDF'in tam ekranda görünmesini sağla
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.transform = 'scale(1)';
+    iframe.style.transformOrigin = 'top left';
+  }
+}
+
+// Ekran boyutu değiştiğinde PDF'i yeniden sığdır
+let resizeTimeout;
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    const iframe = document.getElementById('viewer');
+    if (iframe && iframe.src) {
+      const currentPath = iframe.src.split('#')[0];
+      loadPdfIntoIframe(currentPath);
+    }
+  }, 300);
+});
+
+// handleChange fonksiyonunu güncelle
+function handleChange() {
+  const level = +this.getAttribute("level");
+  selections[level] = this.value;
+
+  // Sonraki seviyeleri resetle
+  for(let i=level+1; i<MAX_LEVELS; i++){
+    selections[i] = null;
+    selects[i].innerHTML = `<option selected disabled>${getLabel(i)}</option>`;
+  }
+
+  const maybePath = selections.filter(Boolean).join("/");
+  let chartPath = null;
+  if(paths.includes(maybePath)){
+    // Ekran boyutuna göre farklı parametreler kullan
+    if (window.innerWidth <= 850) {
+      chartPath = `Charts/${maybePath}#view=FitV&toolbar=0&navpanes=0&scrollbar=1&zoom=page-fit&pagemode=none`;
+    } else {
+      chartPath = `Charts/${maybePath}#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit`;
+    }
+  }
+
+  // PDF yükle
+  if (chartPath) {
+    loadPdfIntoIframe(chartPath);
+  } else {
+    // PDF bulunamadığında iframe'i temizle
+    const iframe = document.getElementById('viewer');
+    if (iframe) {
+      iframe.src = '';
     }
   }
 }
