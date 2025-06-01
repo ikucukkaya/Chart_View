@@ -19,26 +19,7 @@
     .tab-content {display:none; padding:1rem; max-width:1000px; margin:auto;}
     .tab-content.active {display:block;}
     select {padding:.4rem; margin:.3rem; min-width:160px; font-size:1rem; border-radius: 4px; border: 1px solid #ccc;}
-
-    /* İframe container ve iframe stilleri */
-    .iframe-container {
-      position: relative;
-      width: 100%;
-      height: 0;
-      padding-bottom: 60.4%; /* A4 kağıt oranı (1:√2) */
-      overflow: hidden;
-    }
-
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: 1px solid var(--border);
-      box-shadow: 0 0 10px rgba(0,0,0,.1);
-    }
-
+    iframe {width:100%; height:80vh; border:1px solid var(--border); box-shadow:0 0 10px rgba(0,0,0,.1);}
     pre {white-space:pre-wrap; word-wrap:break-word; background:#f9f9f9; padding:.5rem; border:1px solid #ddd; border-radius:4px;}
     #chart-note, #metar-note {font-size:.8rem; color:#666; margin-top:2rem; padding:1rem; border-top:1px solid #ccc; text-align:center;}
     .metar-grid {display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1rem; width:100%;}
@@ -128,17 +109,6 @@
       /* Padding'leri minimize et */
       .tab-content {
         padding: 0.8rem !important;
-      }
-      
-      /* Mobilde iframe oranı düzeltme */
-      .iframe-container {
-        height: 70vh !important;
-        min-height: 350px;
-        padding-bottom: 0 !important;
-      }
-      .iframe-container iframe {
-        height: 100% !important;
-        min-height: 350px;
       }
     }
     @media(max-width:1200px) and (min-width:601px) {
