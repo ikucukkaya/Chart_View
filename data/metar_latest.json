@@ -5,7 +5,7 @@
     "metar_obs_time": "2025-06-13 05:20:00",
     "taf": "TAF LTFM 130440Z 1306/1412 05018KT 9999 SCT012 BECMG 1307/1310 CAVOK BECMG 1315/1318 06008KT",
     "taf_obs_time": "2025-06-13 04:40:00",
-    "fetched_at": "2025-06-13T05:39:15.075961Z"
+    "fetched_at": "2025-06-13T05:50:22.865320Z"
   },
   "LTFJ": {
     "icao": "LTFJ",
@@ -13,7 +13,7 @@
     "metar_obs_time": "2025-06-13 05:20:00",
     "taf": "TAF LTFJ 130440Z 1306/1406 04009KT 9999 SCT015 BECMG 1306/1309 03019KT CAVOK BECMG 1318/1321 04009KT",
     "taf_obs_time": "2025-06-13 04:40:00",
-    "fetched_at": "2025-06-13T05:39:15.075961Z"
+    "fetched_at": "2025-06-13T05:50:22.865320Z"
   },
   "LTBA": {
     "icao": "LTBA",
@@ -21,7 +21,7 @@
     "metar_obs_time": "2025-06-13 05:20:00",
     "taf": "TAF LTBA 130440Z 1306/1406 04019KT 9999 FEW035 BECMG 1306/1309 CAVOK BECMG 1317/1320 04009KT",
     "taf_obs_time": "2025-06-13 04:40:00",
-    "fetched_at": "2025-06-13T05:39:15.075961Z"
+    "fetched_at": "2025-06-13T05:50:22.865320Z"
   },
   "LTBU": {
     "icao": "LTBU",
@@ -29,6 +29,6 @@
     "metar_obs_time": "2025-06-13 05:20:00",
     "taf": "TAF LTBU 130440Z 1306/1406 04016KT 9999 FEW012 BECMG 1306/1309 CAVOK BECMG 1317/1320 05006KT BECMG 1403/1406 SCT035",
     "taf_obs_time": "2025-06-13 04:40:00",
-    "fetched_at": "2025-06-13T05:39:15.075961Z"
+    "fetched_at": "2025-06-13T05:50:22.865320Z"
   }
 }
