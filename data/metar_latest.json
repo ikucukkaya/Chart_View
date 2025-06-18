@@ -5,7 +5,7 @@
     "metar_obs_time": "2025-06-18 20:20:00",
     "taf": "TAF LTFM 181640Z 1818/1924 06012KT 9999 SCT012 BECMG 1818/1820 VRB02KT BECMG 1821/1824 BKN004 TEMPO 1900/1904 1400 BCFG BECMG 1903/1905 SCT014 BECMG 1905/1907 05012KT CAVOK BECMG 1917/1920 VRB02KT",
     "taf_obs_time": "2025-06-18 16:40:00",
-    "fetched_at": "2025-06-18T20:43:31.168513Z"
+    "fetched_at": "2025-06-18T20:55:29.480151Z"
   },
   "LTFJ": {
     "icao": "LTFJ",
@@ -13,7 +13,7 @@
     "metar_obs_time": "2025-06-18 20:20:00",
     "taf": "TAF LTFJ 181640Z 1818/1918 04009KT CAVOK",
     "taf_obs_time": "2025-06-18 16:40:00",
-    "fetched_at": "2025-06-18T20:43:31.168513Z"
+    "fetched_at": "2025-06-18T20:55:29.480151Z"
   },
   "LTBA": {
     "icao": "LTBA",
@@ -21,7 +21,7 @@
     "metar_obs_time": "2025-06-18 20:20:00",
     "taf": "TAF LTBA 181640Z 1818/1918 03015KT CAVOK BECMG 1818/1820 05005KT BECMG 1822/1901 SCT022 BECMG 1904/1907 04015KT CAVOK",
     "taf_obs_time": "2025-06-18 16:40:00",
-    "fetched_at": "2025-06-18T20:43:31.168513Z"
+    "fetched_at": "2025-06-18T20:55:29.480151Z"
   },
   "LTBU": {
     "icao": "LTBU",
@@ -29,6 +29,6 @@
     "metar_obs_time": "2025-06-18 20:20:00",
     "taf": "TAF LTBU 181640Z 1818/1918 04015KT CAVOK BECMG 1818/1821 02005KT FEW010 TEMPO 1822/1902 2500 BCFG BKN006 BECMG 1906/1909 05015KT CAVOK BECMG 1916/1918 VRB02KT",
     "taf_obs_time": "2025-06-18 16:40:00",
-    "fetched_at": "2025-06-18T20:43:31.168513Z"
+    "fetched_at": "2025-06-18T20:55:29.480151Z"
   }
 }
