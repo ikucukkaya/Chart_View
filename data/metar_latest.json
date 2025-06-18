@@ -5,7 +5,7 @@
     "metar_obs_time": "2025-06-18 11:20:00",
     "taf": "TAF LTFM 181040Z 1812/1918 05012KT CAVOK BECMG 1817/1820 VRB02KT BECMG 1821/1824 1400 BCFG BKN004 BECMG 1902/1904 9999 NSW FEW020 BECMG 1905/1907 05012KT",
     "taf_obs_time": "2025-06-18 10:40:00",
-    "fetched_at": "2025-06-18T11:45:37.915818Z"
+    "fetched_at": "2025-06-18T11:55:26.501658Z"
   },
   "LTFJ": {
     "icao": "LTFJ",
@@ -13,7 +13,7 @@
     "metar_obs_time": "2025-06-18 11:20:00",
     "taf": "TAF LTFJ 181040Z 1812/1912 03015KT CAVOK BECMG 1816/1820 03005KT BECMG 1907/1910 03015KT",
     "taf_obs_time": "2025-06-18 10:40:00",
-    "fetched_at": "2025-06-18T11:45:37.915818Z"
+    "fetched_at": "2025-06-18T11:55:26.501658Z"
   },
   "LTBA": {
     "icao": "LTBA",
@@ -21,7 +21,7 @@
     "metar_obs_time": "2025-06-18 11:20:00",
     "taf": "TAF LTBA 181040Z 1812/1912 03015KT CAVOK BECMG 1817/1820 05005KT BECMG 1904/1907 04015KT",
     "taf_obs_time": "2025-06-18 10:40:00",
-    "fetched_at": "2025-06-18T11:45:37.915818Z"
+    "fetched_at": "2025-06-18T11:55:26.501658Z"
   },
   "LTBU": {
     "icao": "LTBU",
@@ -29,6 +29,6 @@
     "metar_obs_time": "2025-06-18 11:20:00",
     "taf": "TAF COR LTBU 181040Z 1812/1912 05015KT CAVOK BECMG 1817/1820 02005KT TEMPO 1822/1902 2500 BCFG BKN006 BECMG 1906/1909 05015KT",
     "taf_obs_time": "2025-06-18 10:40:00",
-    "fetched_at": "2025-06-18T11:45:37.915818Z"
+    "fetched_at": "2025-06-18T11:55:26.501658Z"
   }
 }
