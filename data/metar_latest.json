@@ -5,7 +5,7 @@
     "metar_obs_time": "2025-06-20 09:20:00",
     "taf": "TAF LTFM 200440Z 2006/2112 23006KT CAVOK BECMG 2006/2009 34013KT SCT016 BECMG 2013/2016 04015KT BKN008 BECMG 2018/2021 SCT016",
     "taf_obs_time": "2025-06-20 04:40:00",
-    "fetched_at": "2025-06-20T09:38:18.107447Z"
+    "fetched_at": "2025-06-20T09:50:07.786774Z"
   },
   "LTFJ": {
     "icao": "LTFJ",
@@ -13,7 +13,7 @@
     "metar_obs_time": "2025-06-20 09:20:00",
     "taf": "TAF LTFJ 200440Z 2006/2106 24007KT 9999 FEW035 BECMG 2009/2013 03012KT BECMG 2018/2022 BKN035 TEMPO 2023/2102 -SHRA",
     "taf_obs_time": "2025-06-20 04:40:00",
-    "fetched_at": "2025-06-20T09:38:18.107447Z"
+    "fetched_at": "2025-06-20T09:50:07.786774Z"
   },
   "LTBA": {
     "icao": "LTBA",
@@ -21,7 +21,7 @@
     "metar_obs_time": "2025-06-20 09:20:00",
     "taf": "TAF LTBA 200440Z 2006/2106 20006KT CAVOK BECMG 2009/2012 02015KT SCT016 BECMG 2015/2018 BKN009 BECMG 2022/2101 SCT016",
     "taf_obs_time": "2025-06-20 04:40:00",
-    "fetched_at": "2025-06-20T09:38:18.107447Z"
+    "fetched_at": "2025-06-20T09:50:07.786774Z"
   },
   "LTBU": {
     "icao": "LTBU",
@@ -29,6 +29,6 @@
     "metar_obs_time": "2025-06-20 09:20:00",
     "taf": "TAF LTBU 200440Z 2006/2106 VRB02KT CAVOK BECMG 2008/2011 03015KT SCT022 TEMPO 2011/2015 03016G26KT -SHRA FEW018CB BKN022 BECMG 2020/2023 03005KT",
     "taf_obs_time": "2025-06-20 04:40:00",
-    "fetched_at": "2025-06-20T09:38:18.107447Z"
+    "fetched_at": "2025-06-20T09:50:07.786774Z"
   }
 }
